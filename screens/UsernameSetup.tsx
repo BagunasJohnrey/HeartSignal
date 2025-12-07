@@ -8,9 +8,9 @@ export default function UsernameSetup() {
   const [selectedIcon, setSelectedIcon] = useState(null);
 
   const icons = [
-    require('../assets/icon1.png'),
-    require('../assets/icon2.png'),
-    require('../assets/icon3.png')
+    require('../assets/icon.png'),
+    require('../assets/icon.png'),
+    require('../assets/icon.png')
   ];
 
   return (

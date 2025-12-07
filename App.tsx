@@ -1,15 +1,29 @@
+import './global.css';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
-// import Home from './screens/Home';
-// import Index from './screens/Index';
-// import Notifications from './screens/Notifications';
-// import Settings from './screens/Settings';
+import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
+import { ActivityIndicator, View } from 'react-native';
+import Index from './screens/Index';
 import UsernameSetup from './screens/UsernameSetup';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+
+  let [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_700Bold,
+  });
+
+
+  if (!fontsLoaded) {
+    return (
+      <View className='flex-1 justify-center items-center'>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Index" screenOptions={{ headerShown: false }}>
