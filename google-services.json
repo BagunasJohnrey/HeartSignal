@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "669065092670",
+    "project_id": "heartsignal-8cf23",
+    "storage_bucket": "heartsignal-8cf23.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:669065092670:android:3ef16429a027bfe819fb6f",
+        "android_client_info": {
+          "package_name": "com.yourname.heartsignal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDj1XtnvfJ_PuMYARtEcYWcsFWzZfLKvzM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
