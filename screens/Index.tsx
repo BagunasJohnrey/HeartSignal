@@ -1,137 +1,117 @@
 import React, { useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
   withRepeat, 
   withTiming, 
-  Easing 
+  withDelay,
+  Easing,
+  interpolate
 } from 'react-native-reanimated';
-// import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'; // <--- COMMENTED OUT TO PREVENT CRASH
 import { Ionicons } from '@expo/vector-icons';
+// FIX 1: Correct import for SafeAreaView
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Get screen dimensions for the animated background
-const { width } = Dimensions.get('window');
-
-export default function Index() {
-  const navigation = useNavigation();
-  
-  const translateX = useSharedValue(-width);
+// --- Radar Ring Component ---
+const RadarRing = ({ delay }: { delay: number }) => {
+  const ringProgress = useSharedValue(0);
 
   useEffect(() => {
-    // 1. Setup Animation: Moves the gradient background slowly
-    translateX.value = withRepeat(
-      withTiming(0, {
-        duration: 4000,
-        easing: Easing.linear,
-      }),
-      -1, // Infinite repeat
-      true // Reverse direction
+    ringProgress.value = withDelay(
+      delay,
+      withRepeat(
+        withTiming(1, { duration: 3000, easing: Easing.out(Easing.ease) }),
+        -1, // Infinite
+        false
+      )
     );
-
-    // 2. Configure Google Sign-In
-    // COMMENTED OUT FOR EXPO GO COMPATIBILITY
-    /*
-    GoogleSignin.configure({
-      // You usually get this from your Firebase Console (Web Client ID)
-      // webClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com', 
-    });
-    */
   }, []);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const ringStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: translateX.value }],
+      opacity: interpolate(ringProgress.value, [0, 0.7, 1], [0.5, 0.2, 0]),
+      transform: [
+        { scale: interpolate(ringProgress.value, [0, 1], [1, 3]) },
+      ],
     };
   });
 
-  const handleGoogleSignIn = async () => {
-    console.log("Google Sign-In button pressed (Mock)");
-    
-    // COMMENTED OUT LOGIC
-    /*
-    try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      console.log("User Info:", userInfo);
-      
-      // Navigate to Setup on success
-      // @ts-ignore
-      navigation.navigate('UsernameSetup'); 
-    } catch (error: any) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log("User cancelled the login flow");
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log("Sign in is in progress");
-      } else {
-        console.error("Login Error:", error);
-      }
-    }
-    */
+  return (
+    <Animated.View 
+      className="absolute w-[120px] h-[120px] rounded-full border border-[#FF9E9E] bg-[#FFECEF]"
+      style={ringStyle}
+    />
+  );
+};
 
-    // Direct navigation for UI testing
+export default function Index() {
+  const navigation = useNavigation();
+
+  const handleGoogleSignIn = async () => {
     // @ts-ignore
     navigation.navigate('UsernameSetup');
   };
 
   return (
-    <View className="flex-1 bg-[#FDFBF7] relative overflow-hidden">
+    <View className="flex-1 bg-[#fafafa] relative overflow-hidden">
       
-      {/* --- Animated Background --- */}
-      <Animated.View style={[StyleSheet.absoluteFill, { width: width * 2 }, animatedStyle]}>
-        <LinearGradient
-          // Warm colors: Cream -> Soft Coral -> Cream -> Passion Pink -> Cream
-          colors={['#FDFBF7', '#FFECEF', '#FDFBF7', '#FFF0F3', '#FDFBF7']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-      </Animated.View>
+      <SafeAreaView className="flex-1">
+        <View className="flex-1 px-8 justify-between py-16">
+          
+          {/* --- Top: Word Logo --- */}
+          <View className="items-center mt-10">
+            <Image 
+              source={require('../assets/word-logo.png')}
+              className="w-[150px] h-[40px]"
+              resizeMode="contain"
+            />
+          </View>
 
-      <View className="flex-1 px-8 justify-between py-16">
-        
-        {/* --- Top: Word Logo --- */}
-        <View className="items-center mt-10">
-          <Image 
-            source={require('../assets/word-logo.png')}
-            className="w-48 h-12"
-            resizeMode="contain"
-          />
-        </View>
+          {/* --- Center: Radar Animation & Icon --- */}
+          <View className="items-center justify-center">
+            
+            {/* Radar Container */}
+            <View className="items-center justify-center w-[300px] h-[300px] relative mb-8">
+              
+              <RadarRing delay={0} />
+              <RadarRing delay={1000} />
+              <RadarRing delay={2000} />
 
-        {/* --- Center: Icon & Tagline --- */}
-        <View className="items-center">
-          <Image 
-            source={require('../assets/icon.png')}
-            className="w-40 h-40 mb-8"
-            resizeMode="contain"
-          />
-          <Text className="text-gray-700 text-lg font-medium tracking-wide">
-            A quiet signal. A nearby heart.
-          </Text>
-        </View>
+              {/* The Main Icon */}
+              <Image 
+                source={require('../assets/icon.png')}
+                className="w-[100px] h-[100px]"
+                resizeMode="contain"
+              />
+            </View>
 
-        {/* --- Bottom: Google Button & Disclaimer --- */}
-        <View className="w-full">
-          <TouchableOpacity 
-            onPress={handleGoogleSignIn}
-            activeOpacity={0.8}
-            className="flex-row items-center justify-center bg-white border border-red-200 rounded-full py-4 shadow-sm mb-6"
-          >
-            <Ionicons name="logo-google" size={20} color="#EA4335" style={{ marginRight: 10 }} />
-            <Text className="text-[#EA4335] font-semibold text-lg">
-              Continue with Google
+            <Text className="text-[#525252] text-lg font-medium tracking-wide text-center">
+              A quiet signal. A nearby heart.
             </Text>
-          </TouchableOpacity>
+          </View>
 
-          <Text className="text-center text-gray-400 text-sm px-4 leading-5">
-            By continuing, you agree to share your location only while the app is in use.
-          </Text>
+          {/* --- Bottom: Google Button --- */}
+          <View className="w-full mb-5">
+            <TouchableOpacity 
+              onPress={handleGoogleSignIn}
+              activeOpacity={0.8}
+              className="flex-row items-center justify-center bg-white border border-[#FECACA] rounded-full py-4 mb-6 shadow-sm"
+            >
+              <Ionicons name="logo-google" size={20} color="#EA4335" style={{ marginRight: 10 }} />
+              <Text className="text-[#EA4335] font-semibold text-lg">
+                Continue with Google
+              </Text>
+            </TouchableOpacity>
+
+            <Text className="text-center text-gray-400 px-4 leading-5">
+              By continuing, you agree to share your location only while the app is in use.
+            </Text>
+          </View>
+
         </View>
-
-      </View>
+      </SafeAreaView>
     </View>
   );
 }
