@@ -55,7 +55,7 @@ export default function Index() {
   };
 
   return (
-    <View className="flex-1 bg-[#fafafa] relative overflow-hidden">
+    <View className="flex-1 bg-ghostWhite relative overflow-hidden">
       
       <SafeAreaView className="flex-1">
         <View className="flex-1 px-8 justify-between py-16">
@@ -87,7 +87,7 @@ export default function Index() {
               />
             </View>
 
-            <Text className="text-[#525252] text-lg font-medium tracking-wide text-center">
+            <Text className="text-gray-900 italic text-lg font-medium tracking-wide text-center">
               A quiet signal. A nearby heart.
             </Text>
           </View>
@@ -99,13 +99,13 @@ export default function Index() {
               activeOpacity={0.8}
               className="flex-row items-center justify-center bg-white border border-[#FECACA] rounded-full py-4 mb-6 shadow-sm"
             >
-              <Ionicons name="logo-google" size={20} color="#EA4335" style={{ marginRight: 10 }} />
-              <Text className="text-[#EA4335] font-semibold text-lg">
+              <Ionicons name="logo-google" size={20} color="#ed5d55" style={{ marginRight: 10 }} />
+              <Text className="text-primary font-semibold text-lg">
                 Continue with Google
               </Text>
             </TouchableOpacity>
 
-            <Text className="text-center text-gray-400 px-4 leading-5">
+            <Text className="text-center text-gray-600 px-4 leading-5">
               By continuing, you agree to share your location only while the app is in use.
             </Text>
           </View>

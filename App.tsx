@@ -6,6 +6,8 @@ import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/in
 import { ActivityIndicator, View } from 'react-native';
 import Index from './screens/Index';
 import UsernameSetup from './screens/UsernameSetup';
+import Home from './screens/Home';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -29,8 +31,8 @@ export default function App() {
       <Stack.Navigator initialRouteName="Index" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Index" component={Index} />
         <Stack.Screen name="UsernameSetup" component={UsernameSetup} />
-        {/* <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="Settings" component={Settings} />
+        <Stack.Screen name="Home" component={Home} />
+        {/* <Stack.Screen name="Settings" component={Settings} />
         <Stack.Screen name="Notifications" component={Notifications} /> */}
       </Stack.Navigator>
     </NavigationContainer>
