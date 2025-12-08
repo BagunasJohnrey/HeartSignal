@@ -27,3 +27,15 @@ export const getNearbyUsers = async (latitude, longitude) => {
     console.error('Error fetching nearby users:', error);
   }
 };
+
+export const updateFcmToken = async (userId, token) => {
+  try {
+    const response = await axios.post(`${API_URL}/users/fcm-token`, {
+      userId,
+      fcmToken: token,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating FCM token:', error);
+  }
+};

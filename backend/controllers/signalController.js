@@ -5,6 +5,8 @@ const { sendPushNotification } = require('../utils/pushNotifications');
 const sendSignal = async (req, res) => {
   try {
     const { fromUserId, toUserId } = req.body;
+    
+    // 1. Create the new signal
     const signalRef = db.collection('signals').doc();
     await signalRef.set({
       fromUserId,
@@ -12,16 +14,44 @@ const sendSignal = async (req, res) => {
       timestamp: new Date()
     });
 
-    // Get recipient FCM token
-    const userDoc = await db.collection('users').doc(toUserId).get();
-    const fcmToken = userDoc.data().fcmToken;
+    // 2. Check if this is a Mutual Match
+    // We look for a signal where the recipient (toUserId) has already sent one to the sender (fromUserId)
+    const matchSnapshot = await db.collection('signals')
+      .where('fromUserId', '==', toUserId)
+      .where('toUserId', '==', fromUserId)
+      .get();
 
-    if(fcmToken) {
-      await sendPushNotification(fcmToken, "💗 Someone sent you a Heart Signal!");
+    const isMatch = !matchSnapshot.empty;
+
+    // 3. Get tokens for both users
+    const toUserDoc = await db.collection('users').doc(toUserId).get();
+    const fromUserDoc = await db.collection('users').doc(fromUserId).get();
+    
+    const toToken = toUserDoc.data()?.fcmToken;
+    const fromToken = fromUserDoc.data()?.fcmToken;
+
+    if (isMatch) {
+      // --- CASE: MUTUAL MATCH ---
+      // Notify the person receiving this signal
+      if(toToken) {
+        await sendPushNotification(toToken, "It's a Match! 💘 Someone you signaled liked you back!");
+      }
+      // Optional: Notify the sender immediately as well
+      if(fromToken) {
+        await sendPushNotification(fromToken, "It's a Match! 💘 You matched with a user!");
+      }
+    } else {
+      // --- CASE: STANDARD SIGNAL ---
+      // Only notify the recipient
+      if(toToken) {
+        await sendPushNotification(toToken, "💗 Someone sent you a Heart Signal!");
+      }
     }
 
-    res.status(200).json({ message: 'Signal sent' });
+    res.status(200).json({ message: 'Signal sent', isMatch });
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };

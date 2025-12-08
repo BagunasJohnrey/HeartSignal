@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
 import { ActivityIndicator, View } from 'react-native';
+import { usePushNotifications } from './hooks/usePushNotifications';
 import Index from './screens/Index';
 import UsernameSetup from './screens/UsernameSetup';
 import Home from './screens/Home';
@@ -28,6 +29,12 @@ export default function App() {
       </View>
     );
   }
+
+  const currentUserId = "REPLACE_WITH_ACTUAL_USER_ID"; 
+  
+  // Initialize Notifications
+  usePushNotifications(currentUserId);
+  
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Index" screenOptions={{ headerShown: false }}>
