@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -31,19 +32,43 @@ const NEARBY_USERS = [
   { id: 3, x: -50, y: 110 }, { id: 4, x: 80, y: 80 }, { id: 5, x: 120, y: -120 },
 ];
 
-// --- Radar Component ---
+// --- Radar Component (FIXED) ---
 const RadarRing = ({ delay }: { delay: number }) => {
   const ringProgress = useSharedValue(0);
-  // Animate only on mount
+  
   React.useEffect(() => {
-    ringProgress.value = withDelay(delay, withRepeat(withTiming(1, { duration: 3000, easing: Easing.out(Easing.ease) }), -1, false));
+    ringProgress.value = withDelay(
+      delay, 
+      withRepeat(
+        withTiming(1, { duration: 3000, easing: Easing.out(Easing.ease) }), 
+        -1, 
+        false
+      )
+    );
   }, []);
   
   const ringStyle = useAnimatedStyle(() => ({
     opacity: interpolate(ringProgress.value, [0, 0.7, 1], [0.6, 0.2, 0]),
     transform: [{ scale: interpolate(ringProgress.value, [0, 1], [1, 3.5]) }],
   }));
-  return <Animated.View className="absolute w-[100px] h-[100px] rounded-full border border-white" style={[ringStyle, { backgroundColor: 'rgba(255,255,255,0.2)' }]} />;
+
+  // CHANGED: Use 'style' prop for critical layout/border styles to ensure visibility
+  return (
+    <Animated.View 
+      style={[
+        {
+          position: 'absolute',
+          width: 100,
+          height: 100,
+          borderRadius: 50,
+          borderWidth: 1,
+          borderColor: 'white',
+          backgroundColor: 'rgba(255,255,255,0.2)',
+        },
+        ringStyle
+      ]} 
+    />
+  );
 };
 
 // --- User Dot Component ---
@@ -71,12 +96,12 @@ const SendSignalModal = ({ visible, onClose, onSend, targetUser }: any) => (
       <View className="flex-1 justify-center items-center px-6" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
         <TouchableWithoutFeedback>
           <View className="bg-[#FDFBF7] w-full max-w-sm rounded-3xl p-6 items-center" style={{ shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 10, elevation: 5 }}>
-            <View className="bg-[#FFECEF] p-4 rounded-full mb-4"><Ionicons name="heart" size={32} color="#FF5C8D" /></View>
+            <View className="bg-[#FFECEF] p-4 rounded-full mb-4"><Ionicons name="heart" size={32} color="#ed5d55" /></View>
             <Text className="text-xl font-bold text-[#36454F] mb-2 text-center">Send a Signal?</Text>
-            <Text className="text-gray-500 text-center mb-8 px-2 leading-6">You are about to send a quiet heart signal.</Text>
-            <View className="flex-row w-full space-x-3">
+            <Text className="text-gray-500 text-center mb-8 px-2 leading-6">You are about to send a heart signal.</Text>
+            <View className="flex-row gap-3 w-full">
               <TouchableOpacity onPress={onClose} className="flex-1 bg-gray-200 py-4 rounded-xl items-center"><Text className="text-gray-600 font-bold text-base">Cancel</Text></TouchableOpacity>
-              <TouchableOpacity onPress={onSend} className="flex-1 bg-[#FF5C8D] py-4 rounded-xl items-center" style={{ shadowColor: '#FF5C8D', shadowOpacity: 0.3, shadowRadius: 5, elevation: 3 }}><Text className="text-white font-bold text-base">Send Signal</Text></TouchableOpacity>
+              <TouchableOpacity onPress={onSend} className="flex-1 bg-[#ED5D55] py-4 rounded-xl items-center" style={{ shadowColor: '#FF5C8D', shadowOpacity: 0.3, shadowRadius: 5, elevation: 3 }}><Text className="text-white font-bold text-base">Send Signal</Text></TouchableOpacity>
             </View>
           </View>
         </TouchableWithoutFeedback>
@@ -89,31 +114,40 @@ export default function Home() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'signals' | 'nearby'>('signals');
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  
-  // --- VISIBILITY STATE ---
   const [isVisible, setIsVisible] = useState(true);
 
-  // --- CHECK SETTINGS ON FOCUS ---
+  // --- 2. INITIALIZATION LOGIC ---
   useFocusEffect(
     useCallback(() => {
-      const checkVisibility = async () => {
+      const initializeHome = async () => {
         try {
           const storedVisibility = await AsyncStorage.getItem('userVisibility');
+          let shouldBeVisible = true; 
+          
           if (storedVisibility !== null) {
-            const isVisibleBool = JSON.parse(storedVisibility);
-            setIsVisible(isVisibleBool);
-            
-            // NOTE: If you had real location logic (e.g. Location.watchPositionAsync),
-            // you would start/stop it here based on `isVisibleBool`.
-            if (!isVisibleBool) {
-                console.log("Stopping Location Services...");
+            shouldBeVisible = JSON.parse(storedVisibility);
+          }
+
+          if (shouldBeVisible) {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert(
+                'Permission Required',
+                'Location access is needed to show you on the radar. Visibility has been turned off.',
+                [{ text: 'OK' }]
+              );
+              shouldBeVisible = false;
+              await AsyncStorage.setItem('userVisibility', JSON.stringify(false));
             }
           }
+
+          setIsVisible(shouldBeVisible);
         } catch (e) {
-          console.error("Failed to check visibility", e);
+          console.error("Failed to initialize home", e);
         }
       };
-      checkVisibility();
+      
+      initializeHome();
     }, [])
   );
 
@@ -126,12 +160,11 @@ export default function Home() {
 
   return (
     <View className="flex-1">
-      {/* Background Gradient */}
       <LinearGradient colors={['#ED5D55', '#F8A5A5']} style={StyleSheet.absoluteFill} />
       
       <SafeAreaView className="flex-1">
+        {/* Header */}
         <View className="flex-row justify-between items-center px-6 pt-4 mb-4 z-50">
-          {/* Only show view toggles if visible */}
           {isVisible ? (
             <View className="flex-row rounded-full p-1 h-12 items-center" style={{ backgroundColor: 'rgba(0,0,0,0.1)' }}>
               <TouchableOpacity onPress={() => setViewMode('signals')} className={`h-10 w-12 items-center justify-center rounded-full ${viewMode === 'signals' ? 'bg-white' : 'bg-transparent'}`}>
@@ -142,7 +175,7 @@ export default function Home() {
               </TouchableOpacity>
             </View>
           ) : (
-            <View className="h-12" /> // Spacer to keep layout consistent
+            <View className="h-12" /> 
           )}
 
           <TouchableOpacity onPress={() => router.push('/settings')} className="w-12 h-12 rounded-full items-center justify-center border border-white/30" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
@@ -150,20 +183,36 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
+        {/* Main Content */}
         <View className="flex-1 justify-center items-center relative">
           
-          {/* --- ACTIVE STATE --- */}
           {isVisible ? (
             <>
+              {/* Radar Layer */}
               <View className="absolute items-center justify-center w-full h-full pointer-events-none">
-                <View className="items-center justify-center w-[300px] h-[300px] absolute">
-                  <RadarRing delay={0} /><RadarRing delay={1000} /><RadarRing delay={2000} />
+                
+                {/* CHANGED: Container for Radar & Icon is now ONE centered block */}
+                <View className="items-center justify-center w-[300px] h-[300px]">
+                  
+                  {/* Rings (Absolute to this container) */}
+                  <RadarRing delay={0} />
+                  <RadarRing delay={1000} />
+                  <RadarRing delay={2000} />
+                  
+                  {/* Icon (Centered by flex) */}
+                  <Animated.View style={[pulseAnimatedStyle, { zIndex: 10 }]}>
+                    <Image 
+                      source={require('../assets/icon.png')} 
+                      className="w-[120px] h-[120px]" 
+                      resizeMode="contain" 
+                      style={{ tintColor: 'white', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 10 }} 
+                    />
+                  </Animated.View>
+
                 </View>
-                <Animated.View style={[pulseAnimatedStyle, { zIndex: 10 }]}>
-                  <Image source={require('../assets/icon.png')} className="w-[120px] h-[120px]" resizeMode="contain" style={{ tintColor: 'white', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 10 }} />
-                </Animated.View>
               </View>
               
+              {/* Nearby Users Layer */}
               {viewMode === 'nearby' && (
                 <View className="absolute w-full h-full">
                   {NEARBY_USERS.map((user) => <UserDot key={user.id} user={user} onPress={setSelectedUser} isSignalsMode={false} />)}
@@ -171,7 +220,7 @@ export default function Home() {
               )}
             </>
           ) : (
-            // --- HIDDEN / DISABLED STATE ---
+            // Hidden State
             <View className="items-center justify-center opacity-80">
                <View className="w-[120px] h-[120px] rounded-full border-4 border-white/30 items-center justify-center mb-6 bg-white/10">
                   <Ionicons name="eye-off-outline" size={50} color="white" />
@@ -193,7 +242,15 @@ export default function Home() {
       </SafeAreaView>
       
       {isVisible && (
-        <SendSignalModal visible={!!selectedUser} onClose={() => setSelectedUser(null)} onSend={() => { setSelectedUser(null); Alert.alert("Sent!"); }} targetUser={selectedUser} />
+        <SendSignalModal 
+          visible={!!selectedUser} 
+          onClose={() => setSelectedUser(null)} 
+          onSend={() => { setSelectedUser(null); 
+            
+          Alert.alert("Signal Sent!", "Your heart signal has been sent. Wait to see if someone responds.");
+          }} 
+          
+          targetUser={selectedUser} />
       )}
     </View>
   );
