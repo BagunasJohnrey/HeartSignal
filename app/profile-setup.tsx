@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // <--- IMPORT
 
 export default function UsernameSetup() {
   const router = useRouter();
@@ -30,9 +31,19 @@ export default function UsernameSetup() {
 
   const isFormValid = username.length > 0 && selectedIconIndex !== null;
 
-  const handleContinue = () => {
+  const handleContinue = async () => { // <--- Make ASYNC
     if (!isFormValid) return;
-    console.log(`Profile created: ${username}`);
+    
+    try {
+      // Save data to AsyncStorage
+      await AsyncStorage.setItem('userProfile', JSON.stringify({
+        username: username,
+        iconIndex: selectedIconIndex
+      }));
+    } catch (error) {
+      console.error("Error saving profile:", error);
+    }
+
     router.replace('/home'); 
   };
 
@@ -61,7 +72,6 @@ export default function UsernameSetup() {
                 Display Name
               </Text>
               <TextInput 
-                // REMOVED shadow-sm from className to fix crash
                 className={`w-full bg-white border-2 rounded-2xl p-5 text-xl text-[#36454F] font-medium
                   ${isInputFocused ? 'border-[#FF5C8D]' : 'border-transparent'}
                 `}
@@ -72,7 +82,6 @@ export default function UsernameSetup() {
                 onFocus={() => setIsInputFocused(true)}
                 onBlur={() => setIsInputFocused(false)}
                 maxLength={20}
-                // ADDED inline styles for shadow
                 style={{ 
                   elevation: 2,
                   shadowColor: '#000',
@@ -127,12 +136,10 @@ export default function UsernameSetup() {
             <View className="mb-4">
               <TouchableOpacity 
                 onPress={handleContinue}
-                // REMOVED shadow-lg and shadow color from className
                 className={`w-full py-5 rounded-full items-center flex-row justify-center
                   ${isFormValid ? 'bg-[#FF5C8D]' : 'bg-[#E2E8F0]'}
                 `}
                 disabled={!isFormValid}
-                // ADDED inline styles for shadow
                 style={isFormValid ? {
                   shadowColor: '#FF5C8D',
                   shadowOffset: { width: 0, height: 4 },
