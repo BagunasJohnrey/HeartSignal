@@ -1,26 +1,46 @@
 import './global.css';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
-import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
+import * as React from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { usePushNotifications } from './hooks/usePushNotifications';
+import { createStaticNavigation } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
+
+// Screen Imports
 import Index from './screens/Index';
 import UsernameSetup from './screens/UsernameSetup';
 import Home from './screens/Home';
 import Settings from './screens/Settings';
 import Notifications from './screens/Notifications';
+// import { usePushNotifications } from './hooks/usePushNotifications';
 
+// Define the Static Stack
+const RootStack = createNativeStackNavigator({
+  initialRouteName: 'Index',
+  screenOptions: {
+    headerShown: false,
+  },
+  screens: {
+    Index: Index,
+    UsernameSetup: UsernameSetup,
+    Home: Home,
+    Settings: Settings,
+    Notifications: Notifications,
+  },
+});
 
-const Stack = createNativeStackNavigator();
+// Create the Navigation Component
+const Navigation = createStaticNavigation(RootStack);
 
 export default function App() {
-
   let [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_700Bold,
   });
 
+  // const currentUserId = "REPLACE_WITH_ACTUAL_USER_ID"; 
+  
+  // // Initialize Notifications
+  // usePushNotifications(currentUserId);
 
   if (!fontsLoaded) {
     return (
@@ -30,20 +50,7 @@ export default function App() {
     );
   }
 
-  const currentUserId = "REPLACE_WITH_ACTUAL_USER_ID"; 
-  
-  // Initialize Notifications
-  usePushNotifications(currentUserId);
-  
-  return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Index" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Index" component={Index} />
-        <Stack.Screen name="UsernameSetup" component={UsernameSetup} />
-        <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="Settings" component={Settings} />
-        <Stack.Screen name="Notifications" component={Notifications} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+  // The Navigation component (created by createStaticNavigation) 
+  // automatically handles the NavigationContainer internally.
+  return <Navigation />;
 }
