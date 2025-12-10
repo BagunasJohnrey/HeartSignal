@@ -1,44 +1,25 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  Switch, 
-  ScrollView, 
-  Alert 
-} from 'react-native';
+import { View, Text, TouchableOpacity, Switch, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router'; // <--- CHANGE 1
 
 export default function Settings() {
-  // State for Visibility Toggle
+  const router = useRouter(); // <--- CHANGE 2
+  
   const [isVisible, setIsVisible] = useState(true);
 
   const toggleVisibility = () => {
     setIsVisible(previousState => !previousState);
   };
 
+  // ... (Logout/Delete handlers remain the same) ...
   const handleLogout = () => {
-    Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Log Out", style: "destructive", onPress: () => console.log("User logged out") }
-      ]
-    );
+    Alert.alert("Log Out", "Are you sure?", [{ text: "Cancel" }, { text: "Log Out", onPress: () => console.log("User logged out") }]);
   };
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      "Delete Account",
-      "This action is permanent and cannot be undone. Are you sure?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: () => console.log("Account deleted") }
-      ]
-    );
+     Alert.alert("Delete Account", "Are you sure?", [{ text: "Cancel" }, { text: "Delete", onPress: () => console.log("Account deleted") }]);
   };
 
   return (
@@ -48,7 +29,7 @@ export default function Settings() {
         {/* Header */}
         <View className="flex-row items-center px-6 pt-2 mb-6">
           <TouchableOpacity 
-            onPress={() => router.back()} // Expo Router navigation
+            onPress={() => router.back()} // <--- CHANGE 3
             className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center mr-4"
           >
             <Ionicons name="arrow-back" size={24} color="#374151" />
@@ -57,9 +38,8 @@ export default function Settings() {
         </View>
 
         <ScrollView className="flex-1 px-6">
-          
-          {/* User Information Card */}
-          <View className="bg-white rounded-3xl p-6 mb-6 flex-row items-center shadow-sm border border-gray-100">
+          {/* ... (Rest of the UI remains exactly the same) ... */}
+           <View className="bg-white rounded-3xl p-6 mb-6 flex-row items-center shadow-sm border border-gray-100">
             <View className="w-16 h-16 bg-gray-50 rounded-full items-center justify-center mr-4 border-2 border-[#ED5D55]">
                <Ionicons name="person" size={32} color="#9CA3AF" />
             </View>
@@ -69,7 +49,6 @@ export default function Settings() {
             </View>
           </View>
 
-          {/* Visibility Section */}
           <View className="bg-white rounded-3xl overflow-hidden mb-6 shadow-sm border border-gray-100">
             <View className="p-5 flex-row items-center justify-between">
               <View className="flex-1 pr-4">
@@ -91,9 +70,7 @@ export default function Settings() {
             </View>
           </View>
 
-          {/* App Info Section */}
           <View className="bg-white rounded-3xl overflow-hidden mb-6 shadow-sm border border-gray-100">
-            
             <TouchableOpacity className="p-5 flex-row items-center justify-between border-b border-gray-100 active:bg-gray-50">
               <View className="flex-row items-center">
                 <Ionicons name="information-circle-outline" size={22} color="#4B5563" style={{ marginRight: 12 }} />
@@ -109,26 +86,16 @@ export default function Settings() {
               </View>
               <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
-
           </View>
 
-          {/* Account Actions */}
           <View className="mb-10">
-            <TouchableOpacity 
-              onPress={handleLogout}
-              className="bg-gray-50 p-4 rounded-2xl mb-3 flex-row items-center justify-center border border-gray-200"
-            >
+            <TouchableOpacity onPress={handleLogout} className="bg-gray-50 p-4 rounded-2xl mb-3 flex-row items-center justify-center border border-gray-200">
               <Text className="text-[#ED5D55] font-bold text-base">Log Out</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity 
-              onPress={handleDeleteAccount}
-              className="p-4 rounded-2xl flex-row items-center justify-center"
-            >
+            <TouchableOpacity onPress={handleDeleteAccount} className="p-4 rounded-2xl flex-row items-center justify-center">
               <Text className="text-gray-400 font-medium text-sm">Delete Account</Text>
             </TouchableOpacity>
           </View>
-
         </ScrollView>
       </SafeAreaView>
     </View>

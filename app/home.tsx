@@ -22,7 +22,7 @@ import Animated, {
   Easing,
   interpolate,
 } from 'react-native-reanimated';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 // --- Mock Data for Nearby Users ---
 const NEARBY_USERS = [
@@ -199,6 +199,7 @@ const SendSignalModal = ({ visible, onClose, onSend, targetUser }: { visible: bo
 
 // --- Main Home Screen ---
 export default function Home() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<'signals' | 'nearby'>('signals');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   

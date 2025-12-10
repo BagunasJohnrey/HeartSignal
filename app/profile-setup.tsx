@@ -11,9 +11,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 export default function UsernameSetup() {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [selectedIconIndex, setSelectedIconIndex] = useState<number | null>(null);
