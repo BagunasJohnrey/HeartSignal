@@ -1,56 +1,42 @@
 import './global.css';
 import * as React from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { createStaticNavigation } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
 
-// Screen Imports
+// Screens
 import Index from './screens/Index';
 import UsernameSetup from './screens/UsernameSetup';
 import Home from './screens/Home';
 import Settings from './screens/Settings';
 import Notifications from './screens/Notifications';
-// import { usePushNotifications } from './hooks/usePushNotifications';
 
-// Define the Static Stack
-const RootStack = createNativeStackNavigator({
-  initialRouteName: 'Index',
-  screenOptions: {
-    headerShown: false,
-  },
-  screens: {
-    Index: Index,
-    UsernameSetup: UsernameSetup,
-    Home: Home,
-    Settings: Settings,
-    Notifications: Notifications,
-  },
-});
-
-// Create the Navigation Component
-const Navigation = createStaticNavigation(RootStack);
+const Stack = createNativeStackNavigator();
 
 export default function App() {
-  let [fontsLoaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_700Bold,
   });
 
-  // const currentUserId = "REPLACE_WITH_ACTUAL_USER_ID"; 
-  
-  // // Initialize Notifications
-  // usePushNotifications(currentUserId);
-
   if (!fontsLoaded) {
     return (
-      <View className='flex-1 justify-center items-center'>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
-  // The Navigation component (created by createStaticNavigation) 
-  // automatically handles the NavigationContainer internally.
-  return <Navigation />;
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Index" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Index" component={Index} />
+        <Stack.Screen name="UsernameSetup" component={UsernameSetup} />
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="Settings" component={Settings} />
+        <Stack.Screen name="Notifications" component={Notifications} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }
