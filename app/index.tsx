@@ -46,12 +46,10 @@ const RadarRing = ({ delay }: { delay: number }) => {
 };
 
 export default function Index() {
-  const router = useRouter(); // <--- CHANGE 2
+  const router = useRouter(); 
 
   const handleGoogleSignIn = async () => {
-    // Navigate to the setup screen
-    // Make sure you have a file named 'app/username-setup.tsx' or 'app/profile-setup.tsx'
-    router.push('/profile-setup'); // <--- CHANGE 3
+    router.push('/profile-setup'); 
   };
 
   return (
